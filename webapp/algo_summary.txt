@@ -1,0 +1,97 @@
+核心概率/期望计算算法总结（global_web/app.js）
+
+目标
+- 输入：当前局内状态（剩余卡组、已抽卡数、累计点数）、局外资源（剩余挑战次数 t、剩余双倍次数 k）、11挡位奖励表 rewards
+- 输出：
+  - 下一步动作：继续抽(DRAW) / 直接领取(CLAIM) / 双倍领取(DOUBLE_CLAIM)
+  - 若按全局最优策略进行到底：本局最终落在 11 个挡位(点数 mod 11)的概率分布
+  - 本局期望（含本局是否双倍的最优选择）、全局期望（本局 + 未来挑战）
+
+
+一、状态与动作
+
+1.1 状态分层
+- 局内状态 S：
+  - card_nums[5]：1~5点卡剩余张数
+  - total_points：累计点数
+  - already_drawn：已抽卡数（最多 5）
+- 局外资源 R：
+  - t：剩余挑战次数（包含本次）
+  - k：剩余双倍次数（包含本次可用，且 k<=t）
+- 初始卡组 initial_card_nums[5]：用于“下一次挑战”开始时重置局内状态
+
+1.2 动作
+在任意局内状态下，会比较 3 类动作的价值：
+- DRAW：继续抽下一张（若 drawn<5 且还有牌）
+- CLAIM：现在领取本次奖励（不使用双倍）
+- DOUBLE_CLAIM：现在领取并消耗 1 次双倍（若 k>0）
+
+
+二、核心：全局最优动态规划（递归 + 记忆化）
+
+2.1 价值函数定义
+在 app.js 中，solve(card_nums, pts, drawn, t, k) 返回一个结构：
+- total：从“当前局面开始”到“本次领取 + 未来(t-1次挑战)”的最大总期望
+- current：在 total 对应的最优策略下，“本次挑战”部分的期望（只算本局最终领取金额，不含未来）
+- dist[11]：在 total 对应的最优策略下，“本次挑战最终落到 pts%11 的概率分布”
+- action：从当前局面开始的最优第一步动作（DRAW/CLAIM/DOUBLE_CLAIM）
+
+2.2 递归边界
+- 若 t==0：没有挑战次数，total=current=0，dist 全 0
+- 若 drawn>=5 或 card_nums 总和==0：无法继续抽，只能走领取类动作（CLAIM 或 DOUBLE_CLAIM）
+
+2.3 领取类动作（STOP 的价值）
+设当前挡位奖励：
+  r = rewards[pts % 11]
+未来部分从“下一次挑战初始状态”开始：
+  future_keep = solve(initial_card_nums, 0, 0, t-1, k).total
+  future_use  = solve(initial_card_nums, 0, 0, t-1, k-1).total  (仅当 k>0)
+
+则：
+- CLAIM 的总价值： r + future_keep
+- DOUBLE_CLAIM 的总价值： 2r + future_use
+两者取最大，作为“现在停(领取)”的最优价值与最优动作。
+同时 dist_stop 为一个 one-hot：dist_stop[pts%11]=1，表示如果现在领取，本局最终挡位固定。
+
+2.4 抽牌动作（DRAW 的价值）
+若还能抽牌，则下一张抽到 i 点卡的概率：
+  p_i = card_nums[i] / sum(card_nums)
+抽到后进入子状态：
+  card_nums'[i] = card_nums[i]-1
+  pts' = pts + (i+1)
+  drawn' = drawn + 1
+  t,k 不变（仍在同一次挑战内）
+
+DRAW 的总价值为期望：
+  draw_total = Σ_i p_i * solve(child_i).total
+同理可以把本局期望与分布也做加权合成：
+  draw_current = Σ_i p_i * solve(child_i).current
+  draw_dist[j] = Σ_i p_i * solve(child_i).dist[j]
+
+2.5 最优选择
+将“领取类最优(best_total)”与“抽牌价值(draw_total)”比较：
+- 若 draw_total > best_total：选择 DRAW，并把 current/dist 设置为 draw_current/draw_dist
+- 否则选择领取类（CLAIM 或 DOUBLE_CLAIM），并使用 dist_stop
+
+2.6 记忆化（Memoization）
+递归状态 key = (card_nums, pts, drawn, t, k)，每个 key 只计算一次，避免指数爆炸。
+这使得在固定“最多抽5张”的限制下，计算可在可接受时间内完成。
+
+
+三、本局概率分布输出的含义
+
+dist[11] 不是“下一张抽到什么点数”的分布，而是：
+- “从当前局面开始，按全局最优策略执行到本次挑战结束时”
+- 最终落在每个挡位（total_points % 11）的概率
+
+因此它等价于把策略（停/抽）融合进状态转移后得到的终局分布。
+
+
+四、数值表示
+
+4.1 分数精确计算
+- 为避免浮点误差，JS 端使用 BigInt 实现 Frac（有理数），所有概率与期望都用分数做精确计算。
+- 最终展示时再转为小数（用于 UI）：
+  - toDecimal(places)：截断小数显示
+  - toProbNumber(places)：用于条形图宽度（近似为 Number）
+
