@@ -19,12 +19,11 @@ async function generateBannerImage(patternFilename, colorName) {
 
 
 
-    const img = new Image();
-    img.crossOrigin = 'Anonymous'; // Required for getImageData when loading from different origin
-    img.src = PATTERN_DIR + patternFilename;
+    const fullPath = PATTERN_DIR + patternFilename;
+    const cachedImg = preloadedImages.get(fullPath);
 
     return new Promise((resolve, reject) => {
-        img.onload = () => {
+        const draw = (img) => {
             offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
             offscreenCtx.drawImage(img, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
 
@@ -49,10 +48,18 @@ async function generateBannerImage(patternFilename, colorName) {
             resolve(offscreenCanvas);
         };
 
-        img.onerror = (e) => {
-            console.error('Error loading image:', img.src, e);
-            reject(e);
-        };
+        if (cachedImg) {
+            // 复用预加载的 Image 对象，无需重新请求网络
+            draw(cachedImg);
+        } else {
+            const img = new Image();
+            img.src = fullPath;
+            img.onload = () => draw(img);
+            img.onerror = (e) => {
+                console.error('Error loading image:', img.src, e);
+                reject(e);
+            };
+        }
     });
 }
 
@@ -85,7 +92,7 @@ async function MultipleLayers(bannerStr) {
     return img;
 }
 
-const preloadedImages = new Set();
+const preloadedImages = new Map();
 
 async function preloadImages(imagePaths) {
     const promises = [];
@@ -96,7 +103,7 @@ async function preloadImages(imagePaths) {
             img.src = fullPath;
             promises.push(new Promise((resolve, reject) => {
                 img.onload = () => {
-                    preloadedImages.add(fullPath);
+                    preloadedImages.set(fullPath, img);
                     resolve();
                 };
                 img.onerror = (e) => {
