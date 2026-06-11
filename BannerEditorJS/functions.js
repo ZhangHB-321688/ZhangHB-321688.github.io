@@ -1,6 +1,6 @@
 import { COLORS } from './colors.js';
  
-const PATTERN_DIR = '../BannerPatterns/';
+const PATTERN_DIR = './BannerPatterns/';
 
 // Function to generate and draw a banner image with specified pattern and color
 async function generateBannerImage(patternFilename, colorName) {

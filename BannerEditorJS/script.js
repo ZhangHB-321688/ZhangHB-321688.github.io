@@ -647,7 +647,7 @@ function createPatternButtons() {
     allPatternImages.forEach(patternFile => {
         const button = document.createElement('div');
         button.className = 'pattern-btn';
-        button.style.backgroundImage = `url('../ButtonPatterns/${patternFile}')`;
+        button.style.backgroundImage = `url('./ButtonPatterns/${patternFile}')`;
         button.title = patternFile.replace('.png', '');
         button.dataset.pattern = patternFile.replace('.png', '');
         
@@ -880,7 +880,7 @@ function updatePatternDisplay() {
             iconDiv.dataset.layerIndex = index;
             
             // 设置背景图片（和图案按钮一样的方式）
-            iconDiv.style.backgroundImage = `url('../ButtonPatterns/${patternName}.png')`;
+            iconDiv.style.backgroundImage = `url('./ButtonPatterns/${patternName}.png')`;
             
             // 创建层级编号 - 已隐藏
             // const layerNumber = document.createElement('div');
