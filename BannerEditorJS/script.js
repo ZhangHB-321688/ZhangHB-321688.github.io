@@ -248,13 +248,12 @@ function setupImageUpdater(draggableBlock, blockImage) {
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(imageBitmap, 0, 0);
 
-                // 将画布内容转换为Blob然后转为URL
-                canvas.toBlob(blob => {
-                    if (blockImage.src) {
-                        URL.revokeObjectURL(blockImage.src);
-                    }
-                    blockImage.src = URL.createObjectURL(blob);
-                });
+                // 使用 data URL 直接渲染，不产生网络请求
+                const dataUrl = canvas.toDataURL();
+                if (blockImage.src && blockImage.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(blockImage.src);
+                }
+                blockImage.src = dataUrl;
             } catch (error) {
                 console.error('Error generating image:', error);
                 blockImage.src = 'Failed.png'; // 错误时清除图像
@@ -1580,16 +1579,13 @@ function processImportedFlag(flagString) {
             MultipleLayers(flagString).then(result => {
                 // 处理OffscreenCanvas或ImageBitmap
                 if (result instanceof OffscreenCanvas) {
-                    // OffscreenCanvas需要转换为Blob再转换为URL
-                    result.convertToBlob().then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        blockImage.src = url;
-                        // 图像加载后释放URL
-                        blockImage.onload = () => URL.revokeObjectURL(url);
-                    }).catch(err => {
-                        console.error('转换OffscreenCanvas失败:', err);
-                        showTemporaryMessage('导入成功，但图像生成失败');
-                    });
+                    // OffscreenCanvas → canvas → data URL（无网络请求）
+                    const canvas = document.createElement('canvas');
+                    canvas.width = result.width;
+                    canvas.height = result.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(result, 0, 0);
+                    blockImage.src = canvas.toDataURL();
                 } else if (result instanceof ImageBitmap) {
                     // ImageBitmap需要先绘制到canvas再转换
                     const canvas = document.createElement('canvas');
