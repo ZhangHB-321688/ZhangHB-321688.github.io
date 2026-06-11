@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <header class="wrap">
+    <header class="wrap" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <h1>选剑演武最优策略计算器</h1>
+      <a href="../toolbox.html" style="color:inherit;text-decoration:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.1);font-weight:600;">返回工具箱</a>
     </header>
 
     <main class="wrap grid">
@@ -149,6 +150,15 @@
         <p>若分数太长则会被隐藏，鼠标悬浮可查看完整分数。</p>
         <p>跟着计算器的提示进行也有可能会溢出，但长远来看调度券是最大化的。</p>
         <p>因为进行的是精确概率计算，如果给剩余双倍次数改的很大计算器就会卡住。</p>
+      </section>
+      <section class="card help">
+        <h2>作者对规则的猜测（不确定的部分）</h2>
+        <p>抽到指定点数铭牌的概率是(当前点数剩余/总牌数剩余) 置信度:高</p>
+        <p>铭牌只能抽五张。 置信度:高</p>
+        <p>最终奖励挡位是点数mod11。 置信度:中</p>
+        <p>若不进入战斗直接退出，也会消耗每日的奖励机会。 置信度:高</p>
+        <p>放弃卡牌会丢弃最后一张抽到的卡牌。 置信度:低</p>
+        <p>放弃卡牌的次数每日重置。 置信度:低</p>
       </section>
     </section>
 
