@@ -238,7 +238,7 @@ function actionText(a) {
   if (a === "DRAW_LOCK_0") return "保持关闭翻倍并抽下一张";
   if (a === "DRAW_LOCK_1") return "先开启双倍，再抽下一张";
   if (a === "CLAIM") return "立即开始演算";
-  if (a === "DOUBLE_CLAIM") return "立即开始演算";
+  if (a === "DOUBLE_CLAIM") return "开始双倍奖励演算";
   if (a === "GIVE_UP") return "放弃并重开";
   if (a === "NO_CHALLENGE") return "无剩余奖励次数";
   if (a === "OVERLOAD_ZERO") return "当前状态已被溢出规则记为0";
@@ -296,7 +296,7 @@ function ensureExtraControls() {
       <div>
         <label class="checkbox">
           <input id="lockedDouble" type="checkbox" />
-          当前局双倍已锁定
+          开启双倍
         </label>
       </div>
     `;
@@ -375,11 +375,8 @@ function evalState(payload) {
   if (remainingChallenges < 0 || remainingDoubles < 0 || remainingGiveups < 0) {
     throw new Error("remaining values must be >= 0");
   }
-  if (currentLockedDouble && alreadyDrawn < 3) {
-    throw new Error("当前局双倍只有在已抽到第 3 张及以后才会被锁定");
-  }
   if (currentLockedDouble && remainingDoubles <= 0) {
-    throw new Error("当前局双倍已锁定时，剩余双倍次数必须至少为 1");
+    throw new Error("当前开启双倍时，剩余双倍次数必须至少为 1");
   }
 
   const currentReward = rewardAt(rewards, totalPoints);
@@ -500,7 +497,7 @@ function evalState(payload) {
     if (a > 0 && drawn > 0) {
       const restarted = startState(t, k, a - 1);
       const candidate = cloneResult(restarted, "GIVE_UP");
-      if (compareResult(candidate, best)) best = candidate;
+      if (!compareResult(best,candidate)) best = candidate;
     }
 
     preMemo.set(key, best);
@@ -547,7 +544,7 @@ function evalState(payload) {
     if (a > 0) {
       const restarted = startState(t, k, a - 1);
       const candidate = cloneResult(restarted, "GIVE_UP");
-      if (compareResult(candidate, best)) best = candidate;
+      if (!compareResult(best,candidate)) best = candidate;
     }
 
     postMemo.set(key, best);
@@ -675,22 +672,12 @@ function drawRandom() {
   drawPoint(chosen);
 }
 
-function claimReward(useDouble) {
+function claimReward() {
   const n = readInt("remainingChallenges");
-  const drawn = readInt("alreadyDrawn");
-  const lockedDouble = readLockedDouble();
+  const doubleEnabled = readLockedDouble();
   if (n <= 0) throw new Error("剩余奖励次数为 0，不能领取");
 
-  if (drawn >= 3) {
-    if (lockedDouble && !useDouble) {
-      throw new Error("当前局双倍已锁定，本局只能双倍领取或放弃");
-    }
-    if (!lockedDouble && useDouble) {
-      throw new Error("抽到第 3 张后已不能临时开启双倍");
-    }
-  }
-
-  if (useDouble) {
+  if (doubleEnabled) {
     const m = readInt("remainingDoubles");
     if (m <= 0) throw new Error("剩余双倍次数为 0，不能双倍领取");
     setInt("remainingDoubles", m - 1);
@@ -749,16 +736,9 @@ window.addEventListener("DOMContentLoaded", () => {
   $("btnDraw4").addEventListener("click", () => runSafely(() => drawPoint(4)));
   $("btnDraw5").addEventListener("click", () => runSafely(() => drawPoint(5)));
   $("btnDrawRand").addEventListener("click", () => runSafely(() => drawRandom()));
-  $("btnClaim").addEventListener("click", () => runSafely(() => claimReward(false)));
-  $("btnDoubleClaim").addEventListener("click", () => runSafely(() => claimReward(true)));
+  $("btnClaim").addEventListener("click", () => runSafely(() => claimReward()));
   if ($("btnFail")) $("btnFail").addEventListener("click", () => runSafely(() => failChallenge()));
   if ($("btnGiveUp")) $("btnGiveUp").addEventListener("click", () => runSafely(() => giveUpRound()));
-
-  if ($("alreadyDrawn")) {
-    $("alreadyDrawn").addEventListener("change", () => {
-      if (readInt("alreadyDrawn") < 3) setLockedDouble(false);
-    });
-  }
 
   runSafely(() => computeAndRender());
 });

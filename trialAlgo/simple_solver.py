@@ -69,7 +69,7 @@ def better(candidate, best):
 
 @lru_cache(maxsize=None)
 def start_state(t, k, a):
-    return solve_pre(INITIAL_CARDS, 0, 0, t, k, a)
+    return solve_pre((3,5,5,6,6), 0, 0, t, k, a)
 
 
 @lru_cache(maxsize=None)
