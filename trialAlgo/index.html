@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <header class="wrap" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <header class="wrap">
       <h1>选剑演武最优策略计算器</h1>
-      <a href="../toolbox.html" style="color:#000;text-decoration:none;padding:10px 12px;border-radius:12px;border:2px solid #5df;background:#5df;font-weight:600;">返回工具箱</a>
-      <a href="https://space.bilibili.com/488486599" style="color:#fff;text-decoration:none;padding:10px 12px;border-radius:12px;border:2px solid #fb7299;background:#fb7299;font-weight:600;">作者b站主页</a>
+      <a class="toolbar-link toolbar-back" href="../toolbox.html">返回工具箱</a>
+      <a class="toolbar-link toolbar-bili" href="https://space.bilibili.com/488486599">作者b站主页</a>
     </header>
 
     <main class="wrap grid">
@@ -152,14 +152,14 @@
         <p>剩余奖励次数：本日剩余奖励演算次数。</p>
         <p>剩余双倍次数：今天还能使用多少次双倍领取。</p>
         <p>奖励(11挡位)：奖励表，从0-10，共11个数字，逗号隔开。</p>
-        <p>计入溢出：根据个人情况选择，可以获得更多奖励。如果打不过溢出就选不计入，打不过两层溢出就选不计入两层。</p>
+        <p style="color: red;">计入溢出：根据个人情况选择，可以获得更多奖励。如果打不过溢出就选不计入，打不过两层溢出就选不计入两层。</p>
         <h3>按钮</h3>
-        <p>抽 1~5：用来模拟你实际抽到的卡牌，会自动更新“当前剩余铭牌库、已抽卡数、累计点数”，并立刻重新计算期望。</p>
+        <p style="color: red;">抽 1~5：用来模拟你实际抽到的卡牌，会自动更新“当前剩余铭牌库、已抽卡数、累计点数”，并立刻重新计算期望。</p>
         <p>随机抽取：如果只是想玩玩计算器，这个按钮会随机抽取一张并呈现结果。</p>
         <p>领取 / 双倍领取：用来模拟游戏中领取奖励的方式。</p>
         <p>重置：把当前局面重置为“当前铭牌库=初始铭牌库、已抽卡数=0、累计点数=0”，并重新计算。</p>
         <h3>输出区</h3>
-        <p>建议下一步：在最大化“本日总期望”前提下，此刻最推荐的动作（继续抽/直接领取/双倍领取）。</p>
+        <p style="color: red;">建议下一步：在最大化“本日总期望”前提下，此刻最推荐的动作（继续抽/直接领取/双倍领取）。</p>
         <p>本局期望奖励：从当前局面出发，在最优策略下，本局最终领取到的期望奖励（已包含是否双倍的最优选择）。</p>
         <p>本日全局期望：今日还能获得的调度券总数的期望。</p>
         <p>概率分布：按该策略进行到底，本局最终落在每个挡位（mod 11）的概率。</p>
