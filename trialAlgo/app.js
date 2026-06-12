@@ -500,6 +500,12 @@ function evalState(payload) {
       if (!compareResult(best,candidate)) best = candidate;
     }
 
+    if (a == 0 && drawn > 0) {
+      const restarted = startState(t - 1, k, a);
+      const candidate = cloneResult(restarted, "GIVE_UP");
+      if (!compareResult(best,candidate)) best = candidate;
+    }
+
     preMemo.set(key, best);
     return best;
   }
@@ -543,6 +549,12 @@ function evalState(payload) {
 
     if (a > 0) {
       const restarted = startState(t, k, a - 1);
+      const candidate = cloneResult(restarted, "GIVE_UP");
+      if (!compareResult(best,candidate)) best = candidate;
+    }
+
+    if (a == 0) {
+      const restarted = startState(t - 1, k, a);
       const candidate = cloneResult(restarted, "GIVE_UP");
       if (!compareResult(best,candidate)) best = candidate;
     }
@@ -706,8 +718,12 @@ function giveUpRound() {
   const drawn = readInt("alreadyDrawn");
   const giveups = readInt("remainingGiveups");
   if (drawn <= 0) throw new Error("当前尚未抽牌，不能放弃重开");
-  if (giveups <= 0) throw new Error("剩余放弃次数为 0");
-  setInt("remainingGiveups", giveups - 1);
+  if (giveups <= 0){
+    const n = readInt("remainingChallenges");
+    if (n == 0) throw new Error("剩余奖励次数为 0，不能放弃重开");
+    setInt("remainingChallenges", n - 1);
+  }
+  else setInt("remainingGiveups", giveups - 1);
   copyCurFromInit();
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
