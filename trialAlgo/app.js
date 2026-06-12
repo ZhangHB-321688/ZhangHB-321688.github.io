@@ -621,6 +621,14 @@ function resetRound() {
   computeAndRender();
 }
 
+function finishAndResetRound() {
+  copyCurFromInit();
+  setInt("totalPoints", 0);
+  setInt("alreadyDrawn", 0);
+  setLockedDouble(false);
+  computeAndRender();
+}
+
 function computeAndRender() {
   const payload = parsePayload();
   const data = evalState(payload);
@@ -689,11 +697,22 @@ function claimReward(useDouble) {
   }
 
   setInt("remainingChallenges", n - 1);
-  copyCurFromInit();
-  setInt("totalPoints", 0);
-  setInt("alreadyDrawn", 0);
-  setLockedDouble(false);
-  computeAndRender();
+  finishAndResetRound();
+}
+
+function failChallenge() {
+  const n = readInt("remainingChallenges");
+  const lockedDouble = readLockedDouble();
+  if (n <= 0) throw new Error("剩余奖励次数为 0，不能挑战失败");
+
+  if (lockedDouble) {
+    const m = readInt("remainingDoubles");
+    if (m <= 0) throw new Error("当前局双倍已开启，但剩余双倍次数为 0");
+    setInt("remainingDoubles", m - 1);
+  }
+
+  setInt("remainingChallenges", n - 1);
+  finishAndResetRound();
 }
 
 function giveUpRound() {
@@ -732,6 +751,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("btnDrawRand").addEventListener("click", () => runSafely(() => drawRandom()));
   $("btnClaim").addEventListener("click", () => runSafely(() => claimReward(false)));
   $("btnDoubleClaim").addEventListener("click", () => runSafely(() => claimReward(true)));
+  if ($("btnFail")) $("btnFail").addEventListener("click", () => runSafely(() => failChallenge()));
   if ($("btnGiveUp")) $("btnGiveUp").addEventListener("click", () => runSafely(() => giveUpRound()));
 
   if ($("alreadyDrawn")) {
