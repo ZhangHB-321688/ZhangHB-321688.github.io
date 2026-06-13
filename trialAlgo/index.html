@@ -75,11 +75,21 @@
 
           <div class="row">
             <label>溢出计入方式</label>
-            <select id="overloadMode">
-              <option value="count_all" selected>计入所有溢出部分</option>
-              <option value="ignore_two_layer">不计入两层溢出部分</option>
-              <option value="ignore_all">不计入溢出部分</option>
-            </select>
+            <div class="overflow-row">
+              <select id="overloadMode">
+                <option value="count_all">计入所有溢出部分</option>
+                <option value="ignore_two_layer" selected>不计入两层溢出部分</option>
+                <option value="ignore_all">不计入溢出部分</option>
+              </select>
+              <details class="help-popover">
+                <summary class="help-popover-btn">?</summary>
+                <div class="help-popover-card">
+                  计入所有溢出部分：如果你能打过所有溢出部分，就选择此项<br>
+                  不计入两层溢出部分：如果两次溢出打不过，就选此项<br>
+                  不计入溢出部分：一层溢出也打不过，就选此项。
+                </div>
+              </details>
+            </div>
           </div>
 
           <div class="actions">
