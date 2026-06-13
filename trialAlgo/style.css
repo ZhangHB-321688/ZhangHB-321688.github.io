@@ -72,6 +72,30 @@ header h1 {
   gap: 10px;
 }
 
+.row.three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.row.four {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.input-group {
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.input-group:last-of-type {
+  margin-bottom: 0;
+}
+
 .inline {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -109,6 +133,8 @@ textarea {
   display: flex;
   gap: 10px;
   margin-top: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 button {
@@ -124,6 +150,129 @@ button {
 button.secondary {
   background: #e2e8f0;
   color: #0f172a;
+}
+
+.help-popover {
+  position: relative;
+}
+
+.help-popover-btn {
+  list-style: none;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.help-popover-btn::-webkit-details-marker {
+  display: none;
+}
+
+.help-popover-card {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(15, 23, 42, 0.92);
+  z-index: 10;
+}
+
+.toggle-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 8px 12px;
+}
+
+.toggle-btn[aria-pressed="true"] {
+  background: #eff6ff;
+  color: #0f172a;
+}
+
+.toggle-track {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex: 0 0 46px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.toggle-label {
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.toggle-btn[aria-pressed="true"] .toggle-track {
+  background: #2563eb;
+}
+
+.toggle-btn[aria-pressed="true"] .toggle-thumb {
+  transform: translateX(20px);
+}
+
+.drawn-stack {
+  min-height: 44px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.drawn-stack:empty::before {
+  content: "暂无已抽牌";
+  color: rgba(15, 23, 42, 0.45);
+  font-size: 13px;
+}
+
+.drawn-chip {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12);
 }
 
 .err {
@@ -149,6 +298,19 @@ button.secondary {
 .v {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
+}
+
+#action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .dist {
@@ -193,5 +355,53 @@ button.secondary {
 @media (max-width: 980px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* 浮动建议下一步 */
+.float-action {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.25);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.float-action.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.float-action-label {
+  opacity: 0.75;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.float-action-text {
+  flex: 1;
+  text-align: right;
+}
+
+  .row.three {
+    grid-template-columns: 1fr;
+  }
+
+  .row.four {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

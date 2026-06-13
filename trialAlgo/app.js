@@ -280,63 +280,91 @@ function pct(x) {
   return `${(x * 100).toFixed(2)}%`;
 }
 
-function ensureExtraControls() {
-  const firstCard = document.querySelector("main .card");
-  if (!firstCard) return;
+function readDrawStack() {
+  const el = $("drawnStack");
+  if (!el) return [];
+  const raw = String(el.value || "").trim();
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => Math.trunc(Number(s)))
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 5);
+}
 
-  if (!$("remainingGiveups")) {
-    const actions = firstCard.querySelector(".actions");
-    const row = document.createElement("div");
-    row.className = "row two";
-    row.innerHTML = `
-      <div>
-        <label>剩余放弃次数</label>
-        <input id="remainingGiveups" type="number" value="3" min="0" />
-      </div>
-      <div>
-        <label class="checkbox">
-          <input id="lockedDouble" type="checkbox" />
-          开启双倍
-        </label>
-      </div>
-    `;
-    firstCard.insertBefore(row, actions);
-  }
+function writeDrawStack(stack) {
+  const el = $("drawnStack");
+  if (!el) return;
+  el.value = stack.join(",");
+}
 
-  const legacyCountOverload = $("countOverload");
-  if (legacyCountOverload && !$("overloadMode")) {
-    const checked = !!legacyCountOverload.checked;
-    const row = legacyCountOverload.closest(".row");
-    row.innerHTML = `
-      <label>溢出计入方式</label>
-      <select id="overloadMode">
-        <option value="count_all">计入所有溢出部分</option>
-        <option value="ignore_two_layer">不计入两层溢出部分</option>
-        <option value="ignore_all">不计入溢出部分</option>
-      </select>
-    `;
-    $("overloadMode").value = checked ? "count_all" : "ignore_all";
+function renderDrawStack() {
+  const view = $("drawnStackView");
+  if (!view) return;
+  const stack = readDrawStack();
+  view.innerHTML = "";
+  for (const point of stack) {
+    const chip = document.createElement("div");
+    chip.className = "drawn-chip";
+    chip.textContent = String(point);
+    view.appendChild(chip);
   }
+}
 
-  if (!$("btnGiveUp")) {
-    const groups = firstCard.querySelectorAll(".actions");
-    const targetGroup = groups[2] || groups[groups.length - 1];
-    if (targetGroup) {
-      const btn = document.createElement("button");
-      btn.id = "btnGiveUp";
-      btn.className = "secondary";
-      btn.textContent = "放弃重开";
-      targetGroup.appendChild(btn);
-    }
+function pushDrawnCard(point) {
+  const stack = readDrawStack();
+  stack.push(point);
+  writeDrawStack(stack);
+  renderDrawStack();
+}
+
+function popDrawnCard() {
+  const stack = readDrawStack();
+  if (stack.length === 0) return null;
+  const point = stack.pop();
+  writeDrawStack(stack);
+  renderDrawStack();
+  return point;
+}
+
+function clearDrawStack() {
+  writeDrawStack([]);
+  renderDrawStack();
+}
+
+function resetResourceRow() {
+  const ids = ["remainingChallenges", "remainingDoubles", "remainingGiveups"];
+  for (const id of ids) {
+    const el = $(id);
+    if (!el) continue;
+    el.value = el.defaultValue;
   }
+  computeAndRender();
 }
 
 function readLockedDouble() {
-  return !!($("lockedDouble") && $("lockedDouble").checked);
+  const el = $("lockedDouble");
+  return !!(el && el.getAttribute("aria-pressed") === "true");
 }
 
 function setLockedDouble(v) {
-  if ($("lockedDouble")) $("lockedDouble").checked = !!v;
+  const el = $("lockedDouble");
+  if (!el) return;
+  const enabled = !!v;
+  el.setAttribute("aria-pressed", enabled ? "true" : "false");
+  const label = el.querySelector(".toggle-label");
+  if (label) label.textContent = enabled ? "开启" : "关闭";
+}
+
+function toggleLockedDouble() {
+  const prev = readLockedDouble();
+  setLockedDouble(!prev);
+  try {
+    $("err").textContent = "";
+    computeAndRender();
+  } catch (e) {
+    setLockedDouble(prev);
+    $("err").textContent = String(e && e.message ? e.message : e);
+  }
 }
 
 function parsePayload() {
@@ -580,6 +608,7 @@ function evalState(payload) {
 
 function render(data) {
   $("action").textContent = actionText(data.action);
+  $("floatActionText").textContent = actionText(data.action);
   applyRewardText($("curReward"), data.current_reward);
   applyFracText($("expCur"), data.expectation_current, 6);
   applyFracText($("expTotal"), data.expectation_total, 6);
@@ -627,6 +656,7 @@ function resetRound() {
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
   setLockedDouble(false);
+  clearDrawStack();
   computeAndRender();
 }
 
@@ -635,6 +665,7 @@ function finishAndResetRound() {
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
   setLockedDouble(false);
+  clearDrawStack();
   computeAndRender();
 }
 
@@ -642,6 +673,7 @@ function computeAndRender() {
   const payload = parsePayload();
   const data = evalState(payload);
   render(data);
+  renderDrawStack();
   return { payload, data };
 }
 
@@ -662,6 +694,7 @@ function drawPoint(point) {
   setInt(id, remain - 1);
   setInt("totalPoints", readInt("totalPoints") + point);
   setInt("alreadyDrawn", already + 1);
+  pushDrawnCard(point);
   computeAndRender();
 }
 
@@ -728,6 +761,18 @@ function giveUpRound() {
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
   setLockedDouble(false);
+  clearDrawStack();
+  computeAndRender();
+}
+
+function undoLastDraw() {
+  const already = readInt("alreadyDrawn");
+  if (already <= 0) throw new Error("当前已抽卡数为 0，无法撤回");
+  const point = popDrawnCard();
+  if (point === null) throw new Error("没有可撤回的上一张牌");
+  setInt("cur" + point, readInt("cur" + point) + 1);
+  setInt("totalPoints", readInt("totalPoints") - point);
+  setInt("alreadyDrawn", already - 1);
   computeAndRender();
 }
 
@@ -741,7 +786,8 @@ function runSafely(fn) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  ensureExtraControls();
+  setLockedDouble(readLockedDouble());
+  renderDrawStack();
 
   $("btnEval").addEventListener("click", () => runSafely(() => computeAndRender()));
   $("btnReset").addEventListener("click", () => runSafely(() => resetRound()));
@@ -752,9 +798,27 @@ window.addEventListener("DOMContentLoaded", () => {
   $("btnDraw4").addEventListener("click", () => runSafely(() => drawPoint(4)));
   $("btnDraw5").addEventListener("click", () => runSafely(() => drawPoint(5)));
   $("btnDrawRand").addEventListener("click", () => runSafely(() => drawRandom()));
+  if ($("btnUndo")) $("btnUndo").addEventListener("click", () => runSafely(() => undoLastDraw()));
+  if ($("btnResetResources")) $("btnResetResources").addEventListener("click", () => runSafely(() => resetResourceRow()));
   $("btnClaim").addEventListener("click", () => runSafely(() => claimReward()));
   if ($("btnFail")) $("btnFail").addEventListener("click", () => runSafely(() => failChallenge()));
   if ($("btnGiveUp")) $("btnGiveUp").addEventListener("click", () => runSafely(() => giveUpRound()));
+  if ($("lockedDouble")) $("lockedDouble").addEventListener("click", () => toggleLockedDouble());
+
+  const floatAction = $("floatAction");
+  const actionEl = $("action");
+  if (floatAction && actionEl) {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        floatAction.classList.remove("visible");
+        floatAction.setAttribute("aria-hidden", "true");
+      } else {
+        floatAction.classList.add("visible");
+        floatAction.setAttribute("aria-hidden", "false");
+      }
+    }, { rootMargin: "0px 0px -60px 0px" });
+    observer.observe(actionEl);
+  }
 
   runSafely(() => computeAndRender());
 });

@@ -17,79 +17,115 @@
       <section class="card">
         <h2>输入</h2>
 
-        <div class="row">
-          <label>初始铭牌库(1~5点)</label>
-          <div class="inline">
-            <input id="init1" type="number" value="5" min="0" />
-            <input id="init2" type="number" value="5" min="0" />
-            <input id="init3" type="number" value="5" min="0" />
-            <input id="init4" type="number" value="8" min="0" />
-            <input id="init5" type="number" value="6" min="0" />
+        <div class="input-group">
+          <div class="row">
+            <label>初始铭牌库(1~5点)</label>
+            <div class="inline">
+              <input id="init1" type="number" value="" min="0" />
+              <input id="init2" type="number" value="" min="0" />
+              <input id="init3" type="number" value="" min="0" />
+              <input id="init4" type="number" value="" min="0" />
+              <input id="init5" type="number" value="" min="0" />
+            </div>
+          </div>
+
+          <div class="row four">
+            <div>
+              <label>剩余奖励次数</label>
+              <input id="remainingChallenges" type="number" value="3" min="0"/>
+            </div>
+            <div>
+              <label>剩余双倍次数</label>
+              <input id="remainingDoubles" type="number" value="2" min="0" />
+            </div>
+            <div>
+              <label>剩余放弃次数</label>
+              <input id="remainingGiveups" type="number" value="3" min="0" />
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="btnResetResources" type="button" class="secondary">重置</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <label>开启双倍</label>
+            <button id="lockedDouble" type="button" class="toggle-btn" aria-pressed="false">
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+              <span class="toggle-label">关闭</span>
+            </button>
+          </div>
+
+          <div class="actions">
+            <button id="btnDraw1">抽 1</button>
+            <button id="btnDraw2">抽 2</button>
+            <button id="btnDraw3">抽 3</button>
+            <button id="btnDraw4">抽 4</button>
+            <button id="btnDraw5">抽 5</button>
+            <button id="btnUndo" class="secondary">撤回上一张牌</button>
+          </div>
+
+          <div class="actions">
+            <button id="btnClaim">领取奖励</button>
+            <button id="btnFail" class="secondary">挑战失败</button>
+            <button id="btnGiveUp" class="secondary">放弃重开</button>
+          </div>
+
+          <div class="row">
+            <label>溢出计入方式</label>
+            <select id="overloadMode">
+              <option value="count_all" selected>计入所有溢出部分</option>
+              <option value="ignore_two_layer">不计入两层溢出部分</option>
+              <option value="ignore_all">不计入溢出部分</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button id="btnEval">计算</button>
+            <button id="btnReset" class="secondary">重置剩余卡组到初始状态</button>
+            <button id="btnDrawRand">随机抽取</button>
+            <details class="help-popover">
+              <summary class="help-popover-btn">?</summary>
+              <div class="help-popover-card">重置卡组...干什么已经写的很清楚了（）<br>计算按钮是在你手动改了数字以后要按一下，才能更新结果。<br>如果只是想玩玩计算器，随机抽取按钮会随机抽取一张并呈现结果。</div>
+            </details>
           </div>
         </div>
 
-        <div class="row">
-          <label>当前剩余铭牌库(1~5点)</label>
-          <div class="inline">
-            <input id="cur1" type="number" value="5" min="0" />
-            <input id="cur2" type="number" value="5" min="0" />
-            <input id="cur3" type="number" value="5" min="0" />
-            <input id="cur4" type="number" value="8" min="0" />
-            <input id="cur5" type="number" value="6" min="0" />
+        <div class="input-group">
+          <div class="row">
+            <label>已抽牌栈</label>
+            <input id="drawnStack" type="hidden" value="" />
+            <div id="drawnStackView" class="drawn-stack" aria-live="polite"></div>
           </div>
-        </div>
 
-        <div class="row two">
-          <div>
-            <label>已抽卡数</label>
-            <input id="alreadyDrawn" type="number" value="0" min="0" max="5" />
+          <div class="row">
+            <label>当前剩余铭牌库(1~5点)</label>
+            <div class="inline">
+              <input id="cur1" type="number" value="" min="0" />
+              <input id="cur2" type="number" value="" min="0" />
+              <input id="cur3" type="number" value="" min="0" />
+              <input id="cur4" type="number" value="" min="0" />
+              <input id="cur5" type="number" value="" min="0" />
+            </div>
           </div>
-          <div>
-            <label>累计点数</label>
-            <input id="totalPoints" type="number" value="0" min="0" />
+
+          <div class="row two">
+            <div>
+              <label>已抽卡数</label>
+              <input id="alreadyDrawn" type="number" value="0" min="0" max="5" />
+            </div>
+            <div>
+              <label>累计点数</label>
+              <input id="totalPoints" type="number" value="0" min="0" />
+            </div>
           </div>
-        </div>
 
-        <div class="row two">
-          <div>
-            <label>剩余奖励次数</label>
-            <input id="remainingChallenges" type="number" value="4" min="0" />
+          <div class="row">
+            <label>奖励(11挡位：0~10)</label>
+            <textarea id="rewards" rows="2">0,1000,2000,4000,7500,12000,20000,36000,60000,100000,160000</textarea>
           </div>
-          <div>
-            <label>剩余双倍次数</label>
-            <input id="remainingDoubles" type="number" value="2" min="0" />
-          </div>
-        </div>
-
-        <div class="row">
-          <label>奖励(11挡位：0~10)</label>
-          <textarea id="rewards" rows="2">0,1000,2000,4000,7500,12000,20000,36000,60000,100000,160000</textarea>
-        </div>
-
-        <div class="row">
-          <label class="checkbox">
-            <input id="countOverload" type="checkbox" checked />
-            计入溢出（如果溢出后仍要开启战斗则勾选此项）
-          </label>
-        </div>
-
-        <div class="actions">
-          <button id="btnEval">计算</button>
-          <button id="btnReset" class="secondary">重置剩余卡组到初始状态</button>
-        </div>
-
-        <div class="actions">
-          <button id="btnDraw1">抽 1</button>
-          <button id="btnDraw2">抽 2</button>
-          <button id="btnDraw3">抽 3</button>
-          <button id="btnDraw4">抽 4</button>
-          <button id="btnDraw5">抽 5</button>
-        </div>
-
-        <div class="actions">
-          <button id="btnDrawRand">随机抽取</button>
-          <button id="btnClaim">领取</button>
-          <button id="btnFail" class="secondary">挑战失败</button>
         </div>
 
         <div id="err" class="err"></div>
@@ -103,7 +139,7 @@
         </div>
         <div class="kv">
           <div class="k">当前点数奖励</div>
-          <div id="curReward" class="v">-</div>
+          <div id="curReward" class="v">-</div> 
         </div>
         <div class="kv">
           <div class="k">本局期望奖励</div>
@@ -156,7 +192,7 @@
         <h3>按钮</h3>
         <p>抽 1~5：用来模拟你实际抽到的卡牌，会自动更新“当前剩余铭牌库、已抽卡数、累计点数”，并立刻重新计算期望。</p>
         <p>随机抽取：如果只是想玩玩计算器，这个按钮会随机抽取一张并呈现结果。</p>
-        <p>领取 / 双倍领取：用来模拟游戏中领取奖励的方式。</p>
+        <p>领取：用来模拟游戏中挑战成功领取奖励。</p>
         <p>重置：把当前局面重置为“当前铭牌库=初始铭牌库、已抽卡数=0、累计点数=0”，并重新计算。</p>
         <h3>输出区</h3>
         <p>建议下一步：在最大化“本日总期望”前提下，此刻最推荐的动作（继续抽/直接领取/双倍领取）。</p>
@@ -171,6 +207,11 @@
 
         <p>感谢A_Pfeiffer-65提出让我给网页顶端放上我b站主页的按钮，不说我都忘了（（</p>
       </section>
+
+    <div id="floatAction" class="float-action" aria-hidden="true">
+      <span class="float-action-label">建议下一步</span>
+      <span id="floatActionText" class="float-action-text">-</span>
+    </div>
 
     <script src="./app.js"></script>
   </body>
