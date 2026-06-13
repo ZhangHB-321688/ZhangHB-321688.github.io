@@ -295,7 +295,7 @@ function ensureExtraControls() {
       </div>
       <div>
         <label class="checkbox">
-          <input id="lockedDouble" type="checkbox" />
+          <input id="lockedDouble" type="checkbox" checked />
           开启双倍
         </label>
       </div>
@@ -558,7 +558,7 @@ function evalState(payload) {
       const candidate = cloneResult(restarted, "GIVE_UP");
       if (!compareResult(best,candidate)) best = candidate;
     }
-
+    
     postMemo.set(key, best);
     return best;
   }
@@ -626,7 +626,7 @@ function resetRound() {
   copyCurFromInit();
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
-  setLockedDouble(false);
+  setLockedDouble(true);
   computeAndRender();
 }
 
@@ -634,7 +634,7 @@ function finishAndResetRound() {
   copyCurFromInit();
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
-  setLockedDouble(false);
+  setLockedDouble(true);
   computeAndRender();
 }
 
@@ -727,7 +727,7 @@ function giveUpRound() {
   copyCurFromInit();
   setInt("totalPoints", 0);
   setInt("alreadyDrawn", 0);
-  setLockedDouble(false);
+  setLockedDouble(true);
   computeAndRender();
 }
 
